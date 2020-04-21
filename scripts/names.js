@@ -2,6 +2,7 @@
 // TODO: make a "garbage collector" that removes fully used words
 const names = {
 	item: {
+		odds: [1, 0.5, 1],
 		lists: [
 			[
 				"Lum", "Tef", "Ben", "Eg",
@@ -15,9 +16,7 @@ const names = {
 				"Bo", "Pol"
 			], [
 				"in", "d", "er", "stat",
-				"lan", "ox", "or", "ach",
-				"", "", "", "",
-				"", "" // Prefer no middle
+				"lan", "ox", "or", "ach"
 			], [
 				"ium", "ite", "ate", "in",
 				"ine", "e", "alt", ""
@@ -26,6 +25,7 @@ const names = {
 	},
 	// TODO: make liquid names not awful
 	liquid: {
+		odds: [1, 1, 1],
 		lists: [
 			["Ch", "Dra", "M", "Ra", "Ran", "B", "Ra", "Slu"],
 			["inst", "ra", "end", "ees", "wi"],
@@ -33,17 +33,24 @@ const names = {
 		]
 	},
 	block: {
+		odds: [0.5, 1, 1, 0.05],
 		lists: [
 			[
 				"Combat ", "Supply ", "Router ", "Mining ",
 				"Super ", "Turbo ", "Speedy ", "Quantum ",
 				"Unit ", "Magic ", "Light ", "Glowing ",
-				"Dense ", "Impossible ", "Deadly ",
-				"", "", "", ""
+				"Dense ", "Impossible ", "Deadly ", "Durable ",
+				"Mighty ", "Sluggish ", "Cursed ", "Reinforced ",
+				"Industrial "
 			], [
-				"<itemname> ", "weapons ", ""
+				"<itemname> ", "weaponised <itemname> ", "makeshift ", ""
 			], [
-				"<blockname>", "<blockname> of DEATH"
+				"<blockname>"
+			], [
+				" of Valor",
+				" of Pestilence",
+				" of Strength",
+				" of Souls"
 			]
 		]
 	}
@@ -54,7 +61,7 @@ for (var n in names) {
 	name.volume = 1;
 	var lists = name.lists;
 	for (var i in lists) {
-		name.volume *= lists[i].length;
+		name.volume *= lists[i].length * name.odds[i];
 	}
 }
 

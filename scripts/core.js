@@ -19,7 +19,7 @@ const blocks = [
 		// masks[size] = no of masks available
 		// colors[size] = no of colour masks
 		masks: [0, 1, 1],
-		colors: [0, 1, 1],
+		colors: [0, 0, 0],
 		init(block) {
 			block.size = util.random(2, 3);
 			block.craftTime = util.random(10, 200);
@@ -28,8 +28,8 @@ const blocks = [
 			// todo: inputs
 		},
 		load(block) {
-			this.region = Core.atlas.find("randustry-crafter-base_" + block.size + "_" + util.random(1, this.masks[block.size]));
-			this.colorRegion = Core.atlad.find("randustry-crafter-color_" + block.size + "_" + util.random(1, this.colors[block.size]));
+			block.region = Core.atlas.find("randustry-crafter-base_" + block.size + "_" + util.random(1, this.masks[block.size]));
+			block.colorRegion = Core.atlas.find("randustry-crafter-color_" + block.size + "_" + util.random(1, this.colors[block.size]));
 		},
 		draw(block, tile) {
 			Draw.color(block.color);
@@ -41,7 +41,7 @@ const blocks = [
 		name: "smelter",
 		block: GenericSmelter,
 		category: "production",
-		masks: [0, 2, 1],
+		masks: [0, 1, 1],
 		colors: [0, 0, 0],
 		init(block) {
 			block.flameColor = block.color;
@@ -59,16 +59,55 @@ const blocks = [
 		name: "router",
 		block: Router,
 		category: "distribution",
-		init(block) {},
+		min: 1, max: 5,
+		init(block) {
+			const name = block.localizedName;
+			const random = util.random;
+			if (name.includes("Industrial")) {
+				block.itemCapacity = random(2, 4);
+			}
+
+			if (name.match("Turbo|Speedy")) {
+				block.speed = random(10, 20);
+			} else {
+				block.speed = random(6, 10);
+			}
+		},
 		load(block) {
-			print("Initial " + block)
 			block.region = Core.atlas.find("router");
-			block.colorRegion = Core.atlas.find("randustry-router");
+			util.colorize(block.color, "randustry-router", block.name + "-color");
+			Core.app.post(run(() => {
+				block.colorRegion = Core.atlas.find(block.name + "-color");
+			}));
 		},
 		draw(block, tile) {
-			Draw.color(block.color);
 			Draw.rect(block.colorRegion, tile.drawx(), tile.drawy());
-			Draw.color();
+		},
+		layers(block) {
+			return [
+				Core.atlas.find("router"),
+				Core.atlas.find(block.name + "-color")
+			];
+		}
+	},
+	{
+		name: "ore",
+		block: OreBlock,
+		masks: [3],
+
+		init(block) {
+			block.name = "ore-" + block.item.name;
+			block.localizedName = block.item.localizedName + " Ore";
+			block.itemDrop = block.item;
+		},
+
+		load(block) {
+			const texture = "randustry-ore_" + random(1, this.masks[block.size]);
+			const item = block.item;
+
+			for (var i = 1; i <= block.variants; i++) {
+				util.colorize(item.color, texture + "_" + variant, item.name + variant)
+			}
 		}
 	}
 ];
@@ -88,18 +127,19 @@ const setprop = (item, prop) => {
 	}
 };
 
-// Make a localizedName kebab-cass
+// Make a localizedName kebab-case
 const fixname = name => name.toLowerCase().replace(/\s/g, "-");
 
 // Generate a name for a content type
-core.name = type => {
+core.name = (type, extra) => {
 	const name = names[type];
 	while (true) {
 		var attempt = "";
 		for (var i in name.lists) {
-			attempt += util.rand(name.lists[i]);
+			if (Mathf.chance(name.odds[i])) attempt += util.rand(name.lists[i]);
 		}
 
+		if (extra) attempt = extra(attempt);
 		// Set registered afterwards
 		if (registered[attempt] === undefined) {
 			return attempt;
@@ -144,17 +184,15 @@ core.addLiquid = () => {
 
 core.addBlock = () => {
 	const item = util.rand(itemList);
-	print("Using item " + item)
 	const type = blocks[3]; /* util.rand(blocks); */
-	print("Block is " + type.block)
-	const name = core.name("block").replace("<itemname>", item.localizedName).replace("<blockname>", type.name);
-	print("Name is " + name)
+	const name = core.name("block", attempt => attempt.replace("<itemname>", item.localizedName).replace("<blockname>", type.name));
 	const block = extendContent(type.block || Block, fixname(name), defs.block(type));
 
 	block.localizedName = name;
 	block.color = item.color;
-	block.requirements(Category.production, ItemStack.with(item, util.random(5, 100)));
-	block.buildVisibility = buildVisibility.sandboxOnly;
+	block.requirements(Category[type.category], ItemStack.with(item, util.random(type.min, type.max)));
+	block.item = item
+
 	registered[name] = block;
 	return block;
 }
