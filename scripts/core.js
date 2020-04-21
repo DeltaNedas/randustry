@@ -8,6 +8,7 @@ const names = core.names;
 const util = core.util;
 
 const registered = this.global.randustry.registered;
+const itemList = [];
 
 // It's an array for easy util.random access
 const blocks = [
@@ -60,6 +61,8 @@ const blocks = [
 		category: "distribution",
 		init(block) {},
 		load(block) {
+			print("Initial " + block)
+			block.region = Core.atlas.find("router");
 			block.colorRegion = Core.atlas.find("randustry-router");
 		},
 		draw(block, tile) {
@@ -117,6 +120,7 @@ core.addItem = () => {
 	setprop(item, "explosiveness");
 	setprop(item, "flammability");
 
+	itemList.push(item);
 	registered[name] = item;
 	return item;
 };
@@ -139,20 +143,18 @@ core.addLiquid = () => {
 };
 
 core.addBlock = () => {
-	const item = registered[util.rand(Object.keys(registered))];
+	const item = util.rand(itemList);
 	print("Using item " + item)
 	const type = blocks[3]; /* util.rand(blocks); */
-	print("Block is " + type.name)
+	print("Block is " + type.block)
 	const name = core.name("block").replace("<itemname>", item.localizedName).replace("<blockname>", type.name);
 	print("Name is " + name)
 	const block = extendContent(type.block || Block, fixname(name), defs.block(type));
 
 	block.localizedName = name;
 	block.color = item.color;
-	block.category = Category.production;
-	// TODO: add requirements and remove this
-	block.buildVisiblity = BuildVisibility.sandboxOnly;
-
+	block.requirements(Category.production, ItemStack.with(item, util.random(5, 100)));
+	block.buildVisibility = buildVisibility.sandboxOnly;
 	registered[name] = block;
 	return block;
 }

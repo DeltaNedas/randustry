@@ -12,7 +12,7 @@ const defs = {
 	item(type) {
 		return {
     		load() {
-				this.colorize(this.color, "randustry-" + type + "_" + util.random(1, masks[type]));
+				this.colorize(this.color, "randustry-" + type + "_" + util.random(1, masks[type]), "region", this.name);
 			},
 
 			icon(cicon) {
@@ -56,7 +56,7 @@ const defs = {
 					}
 				], region, name);
 			}
-		});
+		};
 	},
 
 	block(block) {
