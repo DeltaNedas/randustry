@@ -14,20 +14,32 @@ const blocks = [
 	{
 		name: "crafter",
 		block: GenericCrafter,
+		category: "production",
 		// masks[size] = no of masks available
 		// colors[size] = no of colour masks
 		masks: [0, 1, 1],
-		colors: [0, 0, 0],
+		colors: [0, 1, 1],
 		init(block) {
+			block.size = util.random(2, 3);
 			block.craftTime = util.random(10, 200);
 			block.outputItem = new ItemStack(item, util.random(1, 3));
 			// todo: liquid
-			block.cons.add
+			// todo: inputs
+		},
+		load(block) {
+			this.region = Core.atlas.find("randustry-crafter-base_" + block.size + "_" + util.random(1, this.masks[block.size]));
+			this.colorRegion = Core.atlad.find("randustry-crafter-color_" + block.size + "_" + util.random(1, this.colors[block.size]));
+		},
+		draw(block, tile) {
+			Draw.color(block.color);
+			Draw.rect(block.colorRegion, tile.drawx(), tile.drawy());
+			Draw.color();
 		}
 	},
 	{
 		name: "smelter",
 		block: GenericSmelter,
+		category: "production",
 		masks: [0, 2, 1],
 		colors: [0, 0, 0],
 		init(block) {
@@ -38,8 +50,23 @@ const blocks = [
 	{
 		name: "conveyor",
 		block: Conveyor,
+		category: "distribution",
 		masks: [1],
 		colors: [0]
+	},
+	{
+		name: "router",
+		block: Router,
+		category: "distribution",
+		init(block) {},
+		load(block) {
+			block.colorRegion = Core.atlas.find("randustry-router");
+		},
+		draw(block, tile) {
+			Draw.color(block.color);
+			Draw.rect(block.colorRegion, tile.drawx(), tile.drawy());
+			Draw.color();
+		}
 	}
 ];
 
@@ -57,6 +84,9 @@ const setprop = (item, prop) => {
 		item[prop] = util.randomf() * 2;
 	}
 };
+
+// Make a localizedName kebab-cass
+const fixname = name => name.toLowerCase().replace(/\s/g, "-");
 
 // Generate a name for a content type
 core.name = type => {
@@ -76,35 +106,55 @@ core.name = type => {
 
 core.addItem = () => {
 	const name = core.name("item");
-	const item = extendContent(Item, name.toLowerCase(), defs.item("item"));
+	const item = extendContent(Item, fixname(name), defs.item("item"));
+
 	item.localizedName = name;
+	item.color.rand();
 	if (Mathf.chance(0.5)) {
 		item.type = ItemType.material;
 	}
 	setprop(item, "radioactivity");
 	setprop(item, "explosiveness");
 	setprop(item, "flammability");
-	item.color.rand();
+
 	registered[name] = item;
 	return item;
 };
 
 core.addLiquid = () => {
 	const name = core.name("liquid");
-	const liquid = extendContent(Liquid, name.toLowerCase(), defs.item("liquid"));
+	const liquid = extendContent(Liquid, fixname(name), defs.item("liquid"));
+
 	liquid.localizedName = name;
+	liquid.color.rand();
 	setprop(liquid, "flammability");
 	setprop(liquid, "temperature");
 	setprop(liquid, "heatCapacity");
 	setprop(liquid, "viscocity");
 	setprop(liquid, "explosiveness");
 	// TODO: status effect
-	liquid.color.rand();
+
+	registered[name] = liquid;
 	return liquid;
 };
 
 core.addBlock = () => {
-	throw "WIP";
+	const item = registered[util.rand(Object.keys(registered))];
+	print("Using item " + item)
+	const type = blocks[3]; /* util.rand(blocks); */
+	print("Block is " + type.name)
+	const name = core.name("block").replace("<itemname>", item.localizedName).replace("<blockname>", type.name);
+	print("Name is " + name)
+	const block = extendContent(type.block || Block, fixname(name), defs.block(type));
+
+	block.localizedName = name;
+	block.color = item.color;
+	block.category = Category.production;
+	// TODO: add requirements and remove this
+	block.buildVisiblity = BuildVisibility.sandboxOnly;
+
+	registered[name] = block;
+	return block;
 }
 
 core.get = name => registered[name];

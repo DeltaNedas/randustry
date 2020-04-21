@@ -3,13 +3,13 @@ const util = require("util");
 const registered = this.global.randustry.registered;
 
 const masks = {
-	item: 7,
+	item: 11,
 	liquid: 1,
 	// Blocks have their own masks
 };
 
 const defs = {
-	item: type => {
+	item(type) {
 		return {
     		load() {
 				this.colorize(this.color, "randustry-" + type + "_" + util.random(1, masks[type]), "region", this.name);
@@ -40,9 +40,7 @@ const defs = {
 
 				// Set it on main thread
 				Core.app.post(run(() => {
-					print("Posting...")
 					this[region || "region"] = Core.atlas.addRegion(name || this.name, new TextureRegion(new Texture(pixmap)));
-					print("Nope")
 				}));
 			},
 
@@ -61,7 +59,22 @@ const defs = {
 		};
 	},
 
-	block: {}
+	block(block) {
+		return {
+			init() {
+				this.super$init();
+				block.init(this);
+			},
+			load() {
+				this.super$load();
+				block.load(this);
+			},
+			draw(tile) {
+				this.super$draw(tile);
+				block.draw(this, tile);
+			}
+		};
+	}
 };
 
 module.exports = defs;
