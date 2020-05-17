@@ -2,7 +2,7 @@
 // TODO: make a "garbage collector" that removes fully used words
 const names = {
 	item: {
-		odds: [1, 0.5, 1],
+		odds: [1, 0.5, 0.1, 0.9, 0.3],
 		lists: [
 			[
 				"Lum", "Tef", "Ben", "Eg",
@@ -13,13 +13,22 @@ const names = {
 				"Tris", "Quan", "Rout", "Deb", // Debium
 				"Hydr", "Pand", "Ion", "Mio", // Ion-ite/Mio-nite
 				"Con", "Mal", "Ger", "Op", // Op-or-/e
-				"Bo", "Pol"
+				"Bo", "Pol", "Arc", "Lan",
+				"Xyl", "Par"
 			], [
 				"in", "d", "er", "stat",
-				"lan", "ox", "or", "ach"
+				"lan", "ox", "or", "ach",
+				"yb", "b",
+			], [
+				"in", "ch"
 			], [
 				"ium", "ite", "ate", "in",
-				"ine", "e", "alt", ""
+				"ine", "e", "alt", "num",
+				"ide"
+			],
+			[
+				" Paste", " Compound", " Mix", " Alloy",
+				" Fibres"
 			]
 		]
 	},

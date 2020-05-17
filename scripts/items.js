@@ -17,4 +17,4 @@ const egg = eggs => {
 	}
 };
 
-egg(["Debium", "Sand", "Mionite", "Ionite", "Opore"]);
+egg(["Debium", "Sand", "Mionite", "Ionite", "Opore", "Carbide"]);

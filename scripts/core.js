@@ -28,8 +28,8 @@ const blocks = [
 			// todo: inputs
 		},
 		load(block) {
-			block.region = Core.atlas.find("randustry-crafter-base_" + block.size + "_" + util.random(1, this.masks[block.size]));
-			block.colorRegion = Core.atlas.find("randustry-crafter-color_" + block.size + "_" + util.random(1, this.colors[block.size]));
+			block.region = Core.atlas.find("randustry-mask-crafter-base_" + block.size + "_" + util.random(1, this.masks[block.size]));
+			block.colorRegion = Core.atlas.find("randustry-mask-crafter-color_" + block.size + "_" + util.random(1, this.colors[block.size]));
 		},
 		draw(block, tile) {
 			Draw.color(block.color);
@@ -75,7 +75,7 @@ const blocks = [
 		},
 		load(block) {
 			block.region = Core.atlas.find("router");
-			util.colorize(block.color, "randustry-router", block.name + "-color");
+			util.colorize(block.color, "randustry-madk-router", block.name + "-color");
 			Core.app.post(run(() => {
 				block.colorRegion = Core.atlas.find(block.name + "-color");
 			}));
@@ -83,12 +83,9 @@ const blocks = [
 		draw(block, tile) {
 			Draw.rect(block.colorRegion, tile.drawx(), tile.drawy());
 		},
-		layers(block) {
-			return [
-				Core.atlas.find("router"),
-				Core.atlas.find(block.name + "-color")
-			];
-		}
+		// Called before load, cant use colorRegion
+		// Not called on main thread (?), cant generate it here
+		layers: ["router"]
 	},
 	{
 		name: "ore",

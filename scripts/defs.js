@@ -3,7 +3,7 @@ const util = require("util");
 const registered = this.global.randustry.registered;
 
 const masks = {
-	item: 11,
+	item: 14,
 	liquid: 1,
 	// Blocks have their own masks
 };
@@ -26,14 +26,14 @@ const defs = {
 				const name = this.localizedName;
 				const random = util.random;
 				if (name.match("Durable|Reinforced")) {
-					block.health += random(40, 90);
+					this.health += random(40, 90);
 				}
 				if (name.includes("Dense")) {
-					block.health *= 1.5;
-					block.speed /= 2;
+					this.health *= 1.5;
+					this.speed /= 2;
 				}
-				if (name.includes("Strength")) block.health *= 3;
-				if (name.includes("makeshift")) block.health *= 0.6;
+				if (name.includes("Strength")) this.health *= 3;
+				if (name.includes("makeshift")) this.health *= 0.6;
 			},
 
 			load() {
@@ -47,7 +47,11 @@ const defs = {
 			},
 
 			generateIcons() {
-				return block.layers(this);
+				var arr = block.layers;
+				for (var i in arr) {
+					arr[i] = Core.atlas.find(i);
+				}
+				return arr;
 			}
 		};
 	}
